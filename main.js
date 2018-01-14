@@ -1,76 +1,79 @@
-$(document).ready( () => {
+$(document).ready(() => {
 
+	/**
+	 * Bind HTML Inputs
+	 */
 	$('#angle').on('input', function () {
-		let results = computeResults(this.value*10, $('#AB').val(), $('#AC').val());;
-		plot(results.connections, results.vertices, results.segments);
+		let results = computeResults(this.value * 10, $('#AB').val(), $('#AC').val());
+		plot(results.connections, results.vertices);
 	});
 	$('#AB').on('input', function () {
-		let results = computeResults($('#angle').val()*10, $('#AB').val(), $('#AC').val());;
-		plot(results.connections, results.vertices, results.segments);
+		let results = computeResults($('#angle').val() * 10, $('#AB').val(), $('#AC').val());
+		plot(results.connections, results.vertices);
 	});
 	$('#AC').on('input', function () {
-		let results = computeResults($('#angle').val()*10, $('#AB').val(), $('#AC').val());;
-		plot(results.connections, results.vertices, results.segments);
+		let results = computeResults($('#angle').val() * 10, $('#AB').val(), $('#AC').val());
+		plot(results.connections, results.vertices);
+	});
+	
+	let fap = false;
+	$('#toggleFap').click(() => {
+		fap = !fap;
+		if (fap)
+			walk(0, 0, 0, 1, 1000, [-10, 10], true);
 	});
 
+	/**
+	 * Computes the Points for the Triangle given these constraints
+	 * @param {Number} degrees angle of vertex A
+	 * @param {Number} AB Length
+	 * @param {Number} AC Length
+	 */
 	function computeResults(degrees, AB, AC) {
-		// console.log(degrees)
-		// if (degrees < 20) {
-		// 	degrees = 20;
-		// }
-		// if (degrees > 160) {
-		// 	degrees = 160;
-		// }
-
+		// given constraints
 		const AE_TO_EC = [2, 3];
 		const AF_TO_FB = [2, 1];
-
+		// set A position
 		const A = [0, 10];
 
-
+		// convert degrees to radians
 		let angle = degrees * (Math.PI / 180);
+		// compute B and C coordinates
 		let B = [-AB * Math.sin(angle / 2) + A[0], -AB * Math.cos(angle / 2) + A[1]];
 		let C = [AC * Math.sin(angle / 2) + A[0], -AC * Math.cos(angle / 2) + A[1]];
 
-		// console.log(B);
-		// console.log(C);
-
+		// compute length of AE and AF
 		let AE = AC * AE_TO_EC[0] / math.sum(AE_TO_EC);
 		let AF = AB * AF_TO_FB[0] / math.sum(AF_TO_FB);
 
-		// console.log(AE);
-		// console.log(AF)
-
+		// compute F and E coordinates
 		let F = [-AF * Math.sin(angle / 2) + A[0], -AF * Math.cos(angle / 2) + A[1]];
 		let E = [AE * Math.sin(angle / 2) + A[0], -AE * Math.cos(angle / 2) + A[1]];
 
-		// console.log(F);
-		// console.log(E);
-
+		// compute coefficients and constant for FC and line EB
 		let lineFC = line(F, C);
 		let lineEB = line(E, B);
 
-		// console.log(lineFC);
-		// console.log(lineEB);
-
+		// compute intersection O for lines FC and EB
 		let O = intersect(lineFC, lineEB);
 
-		// console.log(O);
-
+		// compute coefficients and constant for AO and line BC
 		let lineAO = line(A, O);
-
 		let lineBC = line(B, C);
 
+		// compute intersection D for lines AO and BC
 		let D = intersect(lineAO, lineBC);
 
+		// compute distance for segments BD and DC
 		let BD = math.distance(B, D);
 		let DC = math.distance(D, C);
 
+		// compute ratio of BD to DC
 		let BD_TO_DC = [1, (DC / BD)]
-		if (!isNaN(BD_TO_DC[0]) && !isNaN(BD_TO_DC[1]) ) {
+		// display to use if still a valid triangle
+		if (!isNaN(BD_TO_DC[0]) && !isNaN(BD_TO_DC[1]))
 			$('#details').html(`BD:DC = 1:${BD_TO_DC[1].toFixed(20)} <br> BD = ${BD.toFixed(4)} <br> DC = ${DC.toFixed(4)}`)
-			// console.log(BD_TO_DC);
-		}
+
 
 		/**
 		 * Returns coefficients for variable x and y and a coeficient describing a line
@@ -81,7 +84,6 @@ $(document).ready( () => {
 		function line(pt1, pt2) {
 			let m = (pt2[1] - pt1[1]) / (pt2[0] - pt1[0]);
 			let b = -m * pt1[0] + pt1[1];
-
 			return {
 				Y: 1,
 				X: -m,
@@ -100,10 +102,6 @@ $(document).ready( () => {
 		}
 
 		return {
-			segments: {
-				BD,
-				DC
-			},
 			connections: [
 				[A, F],
 				[A, O],
@@ -130,7 +128,12 @@ $(document).ready( () => {
 		}
 	}
 
-	function plot(connections, vertices, segments) {
+	/**
+	 * Plots the connections and vertices in Plotly
+	 * @param {[[A,B],[C,D]]} connections array of connections in arrays
+	 * @param {{A,B,B,D}} vertices object of points
+	 */
+	function plot(connections, vertices) {
 
 		let lines = connections.map((c) => {
 			return {
@@ -140,9 +143,7 @@ $(document).ready( () => {
 				type: 'scatter',
 				hoverinfo: 'none',
 				legendgroup: 'lines',
-				showlegend: false,
-				// text: math.distance(c[0],c[1]),
-				// textposition: 'bottom'
+				showlegend: false
 			};
 		});
 
@@ -158,14 +159,13 @@ $(document).ready( () => {
 				hoverinfo: 'text+x+y',
 				textfont: {
 					size: 20
-				},
-				// legendgroup: 'points'
+				}
 			}
 		})
 
 		let data = lines.concat(points);
 
-		Plotly.newPlot('plotlyDiv', data, { 
+		Plotly.newPlot('plotlyDiv', data, {
 			hovermode: 'closest',
 			xaxis: {
 				range: [-20, 20],
@@ -179,62 +179,42 @@ $(document).ready( () => {
 		});
 	}
 
-	let results = computeResults($('#angle').val()*10, $('#AB').val(), $('#AC').val());
-	plot(results.connections, results.vertices, results.segments);
+	let results = computeResults($('#angle').val() * 10, $('#AB').val(), $('#AC').val());
+	plot(results.connections, results.vertices);
 
+	/**
+	 * Performs random walk for a given limit count
+	 * @param {Number} x delta
+	 * @param {Number} y delta
+	 * @param {Number} z delta
+	 * @param {Number} generation loop count
+	 * @param {Number} limit loop limit count
+	 */
+	function walk(x, y, z, generation, limit) {
+		let delta = 0.5;
+		Math.random() > 0.5 ? x += delta : x -= delta;
+		Math.random() > 0.5 ? y + delta : y -= delta;
+		Math.random() > 0.5 ? z += delta : z -= delta;
+		x = Math.max(-10, x);
+		x = Math.min(10, x);
+		y = Math.max(0, y);
+		y = Math.min(20, y);
+		z = Math.max(0, z);
+		z = Math.min(20, z);
+		try {
+			let results = computeResults(($('#angle').val() - x) * 10, Number($('#AB').val()) + y, Number($('#AC').val()) + z);
+			plot(results.connections, results.vertices);
+		}
+		catch (err) {
+			// cannot compute intersection for coincident lines
+		}
 
-	function randwalk(x, generation, limit, lim) {
-		var delta = Math.random() > 0.5 ? 10 : -10;
-		x += delta;
-		console.log(x, generation);
-	  
-		if (generation < limit)
-		  requestAnimationFrame(
-			walk.bind(null, x, ++generation, limit, lim)
-		  );
-	  }
-	function walk(x,y,z, generation, limit, xlim, xinc) {
-
-			let delta = 0.5;
-			Math.random() > 0.5 ? x+=delta : x-=delta;
-			Math.random() > 0.5 ? y+delta : y-=delta;
-			Math.random() > 0.5 ? z+=delta : z-=delta;
-			// console.log($('#angle').val()*10+x, $('#AB').val()+x, $('#AC').val()+x)
-			// console.log(xinc)
-			x = Math.max(-10,x);
-			x = Math.min(10,x);
-			y = Math.max(0,y);
-			y = Math.min(20,y);
-			z = Math.max(0,z);
-			z = Math.min(20,z);
-			try {
-				let results = computeResults(($('#angle').val()-x)*10, Number($('#AB').val())+y, Number($('#AC').val())+z);
-				plot(results.connections, results.vertices, results.segments);
-			}
-			catch(err){
-
-			}
-		
-			if (x >= xlim[1])
-				xinc = false;
-			else if (x <= xlim[0])
-				xinc = true;
-			if (generation < limit && fap)
+		if (generation < limit && fap)
 			setTimeout(
-				walk.bind(null, x,y,z, ++generation, limit, xlim, xinc)
-			, 50);
+				walk.bind(null, x, y, z, ++generation, limit)
+				, 50);
 
 	}
-
-	let fap = false;
-	$('#toggleFap').click(()=>{
-		console.log('fap')
-		fap = !fap;
-		if (fap) {
-			
-		walk(0,0,0, 1, 1000, [-10,10], true);
-		}
-	});
 
 
 });
