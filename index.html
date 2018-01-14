@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Page Title</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.19.0/math.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+<body>
+	<div id="plotlyDiv""></div>
+	<button id="toggleFap">Toggle Fap</button>
+	<br>
+	<div class="container" style="padding-bottom: 10%">
+		<div style="text-align: left;float: left;position: relative">
+			<strong>Details:</strong>
+			<div id="details"></div>
+		</div>
+		<div style="text-align: right;float: right;position: relative">
+			<strong>Constraints:</strong>
+			<div>AE:EC = 2:3</div>
+			<div>AF:FB = 2:1</div>
+		</div>
+	</div>
+	<div>
+		Angle: <input type="range" min="-10" max="10" value="5" class="slider" id="angle">
+		AB: <input type="range" min="0" max="30" value="20" class="slider" id="AB">
+		AC: <input type="range" min="0" max="30" value="20" class="slider" id="AC">
+	</div>
+	<script src="main.js"></script>
+
+</body>
+</html>
